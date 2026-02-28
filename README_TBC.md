@@ -13,11 +13,14 @@ This branch provides a Burning Crusade Classic Anniversary Edition addon flavor.
 - Paladin Holy (focus/target/party healing mode)
 
 ## Installation
-1. Place the packaged addon folder at:
+1. For local dev deployment, run:
+   `powershell -ExecutionPolicy Bypass -File .\tools\deploy_tbc.ps1`
+   This bootstraps `Libs/` and creates a junction.
+2. Place the packaged addon folder at:
    `Interface/AddOns/Hekili_TBC`
-2. Ensure the folder contains `Hekili_TBC.toc`.
-3. Start game and verify addon is enabled.
-4. Run `/reload`.
+3. Ensure the folder contains `Hekili_TBC.toc`.
+4. Start game and verify addon is enabled.
+5. Run `/reload`.
 
 ## Commands
 - `/hekili tbc validate`

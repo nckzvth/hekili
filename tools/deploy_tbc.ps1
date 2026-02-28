@@ -8,6 +8,11 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $addonTarget = "D:\Games\World of Warcraft\_anniversary_\Interface\AddOns\Hekili_TBC"
 $source = $repoRoot
 
+if (-not $RemoveOnly) {
+    Write-Host "Bootstrapping embedded libraries..."
+    & (Join-Path $PSScriptRoot "bootstrap_libs.ps1")
+}
+
 if (Test-Path $addonTarget) {
     Write-Host "Removing existing path: $addonTarget"
     Remove-Item -LiteralPath $addonTarget -Force
