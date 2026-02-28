@@ -1,0 +1,21 @@
+# PR Checklist - TBC Anniversary Port
+
+- [x] Branch `tbc-anniversary` created from `origin/wrath` baseline.
+- [x] TBC TOC added: `Hekili_TBC.toc` with `Interface: 20505`.
+- [x] Flavor routing added (`ns.Flavor.Current()` with TBC flavor support).
+- [x] Compat layer added under `Compat/` for metadata, spell/item APIs, aura fallback, talents, and rank scanning.
+- [x] Spellbook best-rank resolver implemented (`ns.GetBestKnownSpellIDByName`).
+- [x] Paladin MVP specs wired for TBC: Protection, Retribution, Holy.
+- [x] Three shipped default packs added:
+  - [x] `Paladin_Protection_TBC`
+  - [x] `Paladin_Retribution_TBC`
+  - [x] `Paladin_Holy_TBC`
+- [x] Slash command added: `/hekili tbc validate`.
+- [x] Slash command added: `/hekili tbc debug [on|off]`.
+- [x] Retail-only problem areas gated/stubbed for non-retail flavor safety.
+- [x] Packaging updated to `package-as: Hekili_TBC`.
+- [x] TBC docs added:
+  - [x] `README_TBC.md`
+  - [x] `docs/TBC_PORT_NOTES.md`
+- [x] Local deployment helper added:
+  - [x] `tools/deploy_tbc.ps1`
