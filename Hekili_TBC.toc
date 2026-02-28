@@ -1,0 +1,35 @@
+## Interface: 20505
+## Version: @project-version@
+## Title: Hekili_TBC
+## Author: Hekili
+## X-Flavor: TBC
+## Notes: Priority helper for Burning Crusade Classic Anniversary Edition.
+## SavedVariables: HekiliDB
+## OptionalDeps: AddOnSkins, ButtonForge, ConsolePort, ElvUI, LibDualSpec-1.0, Masque, WeakAuras
+## X-Curse-Project-ID: 69254
+## X-WoWI-ID: 24608
+## X-Wago-ID: WYK9WXNL
+
+embeds.xml
+
+Hekili.lua
+Compat\Bootstrap.lua
+Compat\SpellbookRanks.lua
+Compat\Talents.lua
+Utils.lua
+Formatting.lua
+MultilineEditor.lua
+Constants.lua
+State.lua
+Events.lua
+
+Classes.lua
+
+TBC\Classes.lua
+TBC\Paladin.lua
+
+Targets.lua
+Options.lua
+UI.lua
+Scripts.lua
+Core.lua

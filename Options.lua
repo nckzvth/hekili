@@ -9353,6 +9353,16 @@ do
                         order = 6,
                         width = "full"
                     },
+                    tbcFlavor = {
+                        type = "description",
+                        name = function()
+                            if not Hekili.IsTBC() then return "" end
+                            return "|cFF66CCFFTBC Flavor Active|r\nUse |cFFFFD100/hekili tbc validate|r to compile shipped TBC packs and |cFFFFD100/hekili tbc debug|r for debug output.\n"
+                        end,
+                        order = 7,
+                        width = "full",
+                        hidden = function() return not Hekili.IsTBC() end
+                    },
 
                     curse = {
                         type = "input",
@@ -10294,6 +10304,70 @@ do
 
             for arg in string.gmatch( input, "%S+" ) do
                 insert( args, lower( arg ) )
+            end
+
+            if args[1] == "tbc" then
+                if not Hekili.IsTBC() then
+                    Hekili:Print( "TBC command set is only available in the TBC flavor." )
+                    return
+                end
+
+                local action = args[2] or "help"
+
+                if action == "debug" then
+                    local cfg = ns.tbcDebug
+
+                    if args[3] == "on" then
+                        cfg.enabled = true
+                    elseif args[3] == "off" then
+                        cfg.enabled = false
+                    else
+                        cfg.enabled = not cfg.enabled
+                    end
+
+                    Hekili:Print( format( "TBC debug mode is now %s.", cfg.enabled and "|cFF00FF00ON|r" or "|cFFFF0000OFF|r" ) )
+                    return
+                elseif action == "validate" then
+                    local packs = {
+                        "Paladin_Protection_TBC",
+                        "Paladin_Retribution_TBC",
+                        "Paladin_Holy_TBC",
+                    }
+
+                    local compiled = 0
+                    local failed = 0
+                    local missing = 0
+
+                    Hekili:LoadScripts()
+
+                    for _, packName in ipairs( packs ) do
+                        local pack = self.DB.profile.packs[ packName ]
+
+                        if not pack then
+                            missing = missing + 1
+                            Hekili:Print( format( "|cFFFF0000Missing pack:|r %s", packName ) )
+                        else
+                            for listName, listData in pairs( pack.lists ) do
+                                for index in ipairs( listData ) do
+                                    local ok, err = pcall( self.LoadScript, self, packName, listName, index )
+                                    if ok then
+                                        compiled = compiled + 1
+                                    else
+                                        failed = failed + 1
+                                        Hekili:Print( format( "|cFFFF0000Failed:|r %s/%s/%d (%s)", packName, listName, index, tostring( err ) ) )
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    Hekili:Print( format( "TBC validation complete: packs_missing=%d, actions_compiled=%d, actions_failed=%d.", missing, compiled, failed ) )
+                    Hekili:TBCDebug( "Validation summary: missing=%d compiled=%d failed=%d", missing, compiled, failed )
+                    return
+                else
+                    Hekili:Print( "Usage: /hekili tbc validate | /hekili tbc debug [on|off]" )
+                    return
+                end
             end
 
             if ( "set" ):match( "^" .. args[1] ) then

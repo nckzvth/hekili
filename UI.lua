@@ -19,6 +19,7 @@ local orderedPairs = ns.orderedPairs
 local round = ns.round
 
 local format, insert = string.format, table.insert
+local GetItemCooldown = ( ns.Compat and ns.Compat.GetItemCooldown ) or _G.GetItemCooldown
 
 local GetSpecialization = _G.GetSpecialization or function() return GetActiveTalentGroup() end
 local GetSpecializationInfo = _G.GetSpecializationInfo or function()
@@ -1325,7 +1326,7 @@ do
 
                                     local rStart, rDuration
                                     if a.item then
-                                        rStart, rDuration = _G.C_Container.GetItemCooldown( a.item )
+                                        rStart, rDuration = GetItemCooldown( a.item )
                                     else
                                         rStart, rDuration = GetSpellCooldown( a.id )
                                     end
@@ -1526,7 +1527,7 @@ do
 
                         local rStart, rDuration = 0, 0
                         if a.item then
-                            rStart, rDuration = _G.C_Container.GetItemCooldown( a.item )
+                            rStart, rDuration = GetItemCooldown( a.item )
                         else
                             if a.cooldown > 0 or a.spendType ~= "runes" then
                                 rStart, rDuration = GetSpellCooldown( a.id )
@@ -1663,7 +1664,7 @@ do
                     local start, duration, enabled, modRate = 0, 0, 1, 1
 
                     if ability.item then
-                        start, duration, enabled, modRate = _G.C_Container.GetItemCooldown( ability.item )
+                        start, duration, enabled, modRate = GetItemCooldown( ability.item )
                     else
                         start, duration, enabled, modRate = GetSpellCooldown( ability.id )
                     end

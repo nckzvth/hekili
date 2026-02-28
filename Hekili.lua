@@ -2,10 +2,12 @@
 -- April 2014
 
 local addon, ns = ...
-local GetAddOnMetadata = GetAddOnMetadata or C_AddOns.GetAddOnMetadata
+local GetAddOnMetadata = GetAddOnMetadata or ( C_AddOns and C_AddOns.GetAddOnMetadata )
 Hekili = LibStub("AceAddon-3.0"):NewAddon( "Hekili", "AceConsole-3.0", "AceSerializer-3.0" )
-Hekili.Version = GetAddOnMetadata( "Hekili", "Version" )
-Hekili.Flavor = GetAddOnMetadata( "Hekili", "X-Flavor" ) or "Retail"
+Hekili.Version = GetAddOnMetadata and GetAddOnMetadata( addon, "Version" ) or "Dev"
+Hekili.Flavor = GetAddOnMetadata and GetAddOnMetadata( addon, "X-Flavor" ) or "Retail"
+Hekili.Flavor = tostring( Hekili.Flavor ):gsub( "^%s+", "" ):gsub( "%s+$", "" )
+if Hekili.Flavor == "" then Hekili.Flavor = "Retail" end
 
 local format = string.format
 local insert, concat = table.insert, table.concat
@@ -22,12 +24,22 @@ end
 Hekili.IsWrath = function()
     return Hekili.Flavor == "Wrath"
 end
+Hekili.IsTBC = function()
+    return Hekili.Flavor == "TBC"
+end
 Hekili.IsClassic = function()
-    return Hekili.IsWrath()
+    return Hekili.IsWrath() or Hekili.IsTBC()
 end
 Hekili.IsDragonflight = function()
     return select( 4, GetBuildInfo() ) >= 100000
 end
+
+Hekili.FlavorAPI = {
+    Current = function()
+        return Hekili.Flavor
+    end
+}
+ns.Flavor = Hekili.FlavorAPI
 
 ns.PTR = false
 
@@ -143,6 +155,11 @@ ns.UI = {
 
 ns.debug = {}
 ns.snapshots = {}
+ns.tbcDebug = {
+    enabled = false,
+    throttle = 0.50,
+    last = 0
+}
 
 
 function Hekili:Query( ... )
@@ -220,6 +237,19 @@ function Hekili:Debug( ... )
 
 	active_debug.log[ active_debug.index ] = format( "%" .. ( indent > 0 and ( 4 * indent ) or "" ) .. "s" .. text, "", select( start, ... ) )
     active_debug.index = active_debug.index + 1
+end
+
+function Hekili:TBCDebug( msg, ... )
+    if not Hekili.IsTBC() then return end
+
+    local cfg = ns.tbcDebug
+    if not cfg.enabled then return end
+
+    local now = GetTime()
+    if now - cfg.last < cfg.throttle then return end
+
+    cfg.last = now
+    self:Print( format( "|cFF66CCFF[TBC]|r " .. msg, ... ) )
 end
 
 

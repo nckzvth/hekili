@@ -502,6 +502,10 @@ end )
 
 
 do
+    if not Hekili.IsRetail() then
+        function ns.updatePowers() end
+        function ns.updateEssences() end
+    else
     local loc = ItemLocation:CreateEmpty()
 
     local GetAllTierInfoByItemID = C_AzeriteEmpoweredItem.GetAllTierInfoByItemID
@@ -660,6 +664,7 @@ do
     end
 
     ns.updateEssences()
+    end
 end
 
 
@@ -719,7 +724,7 @@ do
 
     local wasWearing = {}
     local updateIsQueued = false
-    local maxItemSlot = Hekili.IsWrath() and INVSLOT_LAST_EQUIPPED or Enum.ItemSlotFilterTypeMeta.MaxValue
+    local maxItemSlot = ( Hekili.IsWrath() or Hekili.IsTBC() ) and INVSLOT_LAST_EQUIPPED or ( Enum.ItemSlotFilterTypeMeta and Enum.ItemSlotFilterTypeMeta.MaxValue or INVSLOT_LAST_EQUIPPED )
 
     function ns.updateGear()
         if not Hekili.PLAYER_ENTERING_WORLD or GetTime() - lastUpdate < 1 then
@@ -1067,6 +1072,7 @@ RegisterEvent( "PLAYER_REGEN_DISABLED", function( event )
 
     -- Hekili:ExpireTTDs( true )
     Hekili:ForceUpdate( event, true ) -- Force update on entering combat since OOC refresh can be very slow (0.5s).
+    Hekili:TBCDebug( "Entered combat at %.2f.", GetTime() )
 end )
 
 
@@ -1075,6 +1081,7 @@ RegisterEvent( "PLAYER_REGEN_ENABLED", function ()
     combat_ended = GetTime()
 
     state.combat = 0
+    Hekili:TBCDebug( "Left combat at %.2f.", GetTime() )
 
     state.swings.mh_actual = 0
     state.swings.oh_actual = 0

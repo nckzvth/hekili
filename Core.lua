@@ -10,6 +10,7 @@ local scripts = Hekili.Scripts
 
 local callHook = ns.callHook
 local clashOffset = ns.clashOffset
+local Flavor = ns.Flavor
 local formatKey = ns.formatKey
 local getSpecializationID = ns.getSpecializationID
 local getResourceName = ns.getResourceName
@@ -64,6 +65,7 @@ end
 -- OnInitialize()
 -- Addon has been loaded by the WoW client (1x).
 function Hekili:OnInitialize()
+    local currentFlavor = Flavor and Flavor.Current and Flavor.Current() or self.Flavor
     self.DB = LibStub( "AceDB-3.0" ):New( "HekiliDB", self:GetDefaults(), true )
 
     self.Options = self:GetOptions()
@@ -161,6 +163,7 @@ function Hekili:OnInitialize()
     self:UpdateDisplayVisibility()
 
     callHook( "onInitialize" )
+    self:TBCDebug( "Initialized flavor %s.", tostring( currentFlavor ) )
 end
 
 

@@ -24,7 +24,7 @@ local insert, wipe = table.insert, table.wipe
 
 local mt_resource = ns.metatables.mt_resource
 
-local GetItemCooldown = _G.C_Container.GetItemCooldown
+local GetItemCooldown = ( ns.Compat and ns.Compat.GetItemCooldown ) or _G.GetItemCooldown
 
 local GetPlayerAuraBySpellID = _G.GetPlayerAuraBySpellID or function( id ) return FindUnitBuffByID( "player", id ) end
 
@@ -866,6 +866,14 @@ local HekiliSpecMixin = {
             import = import:gsub("([^|])|([^|])", "%1||%2")
         }
     end,
+    RegisterPackTable = function( self, name, version, payload )
+        if type( payload ) ~= "table" then return end
+
+        self.packs[ name ] = {
+            version = tonumber( version ),
+            payload = payload
+        }
+    end,
 
     RegisterOptions = function( self, options )
         self.options = options
@@ -1009,16 +1017,25 @@ function Hekili:RestoreDefaults()
         local existing = rawget( p.packs, k )
 
         if not existing or not existing.version or existing.version < v.version then
-            local data = self:DeserializeActionPack( v.import )
+            local payload
 
-            if data and type( data ) == 'table' then
-                p.packs[ k ] = data.payload
-                data.payload.version = v.version
-                data.payload.date = v.version
-                data.payload.builtIn = true
+            if v.payload then
+                payload = tableCopy( v.payload )
+            else
+                local data = self:DeserializeActionPack( v.import )
+                if data and type( data ) == "table" then
+                    payload = data.payload
+                end
+            end
+
+            if payload then
+                p.packs[ k ] = payload
+                payload.version = v.version
+                payload.date = v.version
+                payload.builtIn = true
                 insert( changed, k )
 
-                local specID = data.payload.spec
+                local specID = payload.spec
 
                 if specID then
                     local spec = rawget( p.specs, specID )
@@ -1071,13 +1088,22 @@ function Hekili:RestoreDefault( name )
     local default = class.packs[ name ]
 
     if default then
-        local data = self:DeserializeActionPack( default.import )
+        local payload
 
-        if data and type( data ) == 'table' then
-            p.packs[ name ] = data.payload
-            data.payload.version = default.version
-            data.payload.date = default.version
-            data.payload.builtIn = true
+        if default.payload then
+            payload = tableCopy( default.payload )
+        else
+            local data = self:DeserializeActionPack( default.import )
+            if data and type( data ) == "table" then
+                payload = data.payload
+            end
+        end
+
+        if payload then
+            p.packs[ name ] = payload
+            payload.version = default.version
+            payload.date = default.version
+            payload.builtIn = true
         end
     end
 end
@@ -6849,6 +6875,9 @@ function Hekili:SpecializationChanged()
     if Hekili.IsWrath() then
         currentSpec = 1
         _, currentClass, currentID = UnitClass( "player" )
+    elseif Hekili.IsTBC() then
+        currentSpec = 1
+        currentID, currentClass = ns.Compat.GetTBCSpecialization()
     else
         currentSpec = GetSpecialization()
         currentID = GetSpecializationInfo( currentSpec )
@@ -6908,6 +6937,54 @@ function Hekili:SpecializationChanged()
         state.spec.key = currentClass:lower()
         state.role.attack = true
         state.spec[ state.spec.key ] = true
+    elseif Hekili.IsTBC() then
+        for k in pairs( state.role ) do
+            state.role[ k ] = false
+        end
+
+        local classFile = UnitClassBase( "player" )
+
+        if classFile == "PALADIN" then
+            local tbcSpecs = { 65, 66, 70 }
+            local specName = "Retribution"
+            local role = "DAMAGER"
+
+            if currentID == 65 then
+                specName = "Holy"
+                role = "HEALER"
+            elseif currentID == 66 then
+                specName = "Protection"
+                role = "TANK"
+            end
+
+            state.spec.id = currentID
+            state.spec.name = specName
+            state.spec.key = getSpecializationKey( currentID )
+            state.spec[ state.spec.key ] = true
+
+            if role == "TANK" then
+                state.role.tank = true
+            elseif role == "HEALER" then
+                state.role.healer = true
+            else
+                state.role.attack = true
+            end
+
+            for _, id in ipairs( tbcSpecs ) do
+                if id == currentID then
+                    table.insert( specs, 1, id )
+                else
+                    table.insert( specs, id )
+                end
+            end
+        else
+            state.spec.id = currentID
+            state.spec.name = currentClass
+            state.spec.key = currentClass and currentClass:lower() or "none"
+            state.spec[ state.spec.key ] = true
+            state.role.attack = true
+            table.insert( specs, currentID )
+        end
     else
         for i = 1, 4 do
             local id, name, _, _, role = GetSpecializationInfo( i )
@@ -7137,6 +7214,7 @@ function Hekili:SpecializationChanged()
     ns.callHook( 'specializationChanged' )
 
     ns.updateTalents()
+    Hekili:TBCDebug( "Specialization set to %s (%d).", state.spec.name or "Unknown", state.spec.id or 0 )
     -- ns.updateGear()
 
     state.swings.mh_speed, state.swings.oh_speed = UnitAttackSpeed( "player" )
@@ -7187,6 +7265,11 @@ do
         if login or reload then
             if Hekili.IsWrath() then
                 if state.spec.id ~= select( 3, UnitClass( "player" ) ) then Hekili:SpecializationChanged() end
+            elseif Hekili.IsTBC() then
+                local currentID = ns.Compat.GetTBCSpecialization()
+                if currentID ~= state.spec.id then
+                    Hekili:SpecializationChanged()
+                end
             else
                 local currentSpec = GetSpecialization()
                 local currentID = GetSpecializationInfo( currentSpec )

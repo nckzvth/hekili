@@ -26,6 +26,7 @@ local LSR = LibStub( "SpellRange-1.0" )
 
 local class = Hekili.Class
 local scripts = Hekili.Scripts
+local GetItemCooldown = ( ns.Compat and ns.Compat.GetItemCooldown ) or _G.GetItemCooldown
 
 local GetMeleeHaste = _G.GetMeleeHaste or function() return GetCombatRatingBonus( CR_HASTE_MELEE ) end
 local GetRangedHaste = _G.GetRangedHaste or function() return GetCombatRatingBonus( CR_HASTE_RANGED ) end
@@ -2944,7 +2945,7 @@ do
                 end
 
                 if ability.item then
-                    GetCooldown = _G.C_Container.GetItemCooldown
+                    GetCooldown = GetItemCooldown
                     id = ability.itemCd or ability.item
                 elseif ability.funcs.cooldown_special then
                     GetCooldown = ability.funcs.cooldown_special
@@ -2988,7 +2989,7 @@ do
                     local potion = class.potions[ itemName ]
 
                     if state.toggle.potions and potion and GetItemCount( potion.item ) > 0 then
-                        start, duration = _G.C_Container.GetItemCooldown( potion.item )
+                        start, duration = GetItemCooldown( potion.item )
 
                     else
                         start = state.now
